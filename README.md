@@ -199,13 +199,13 @@ app.mainloop()
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/141806e9-411f-4619-b060-4be461527f13" width="80%">
+  <img src="https://github.com/user-attachments/assets/5a2ac3eb-aeac-4ec9-a8ac-0d7a153022ab" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/bc11868a-1452-446f-b4ac-e735577184e8" width="80%">
+  <img src="https://github.com/user-attachments/assets/a942c9f0-533a-49a1-bbe1-a5e2c4383975" width="80%">
 </p>
 
 ---
@@ -242,7 +242,7 @@ This is a parameter of the file dialog, but it's more powerful than the default 
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/2c2a9d3c-2570-46ee-b404-e30de183b383" width="80%">
+  <img src="https://github.com/user-attachments/assets/a90d456f-217e-42e7-9ba2-ea0adb65c411" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
