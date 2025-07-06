@@ -9,6 +9,7 @@ from CTkToolTip import *
 from typing import Any, Literal, Optional, TextIO, List
 from _tkinter import TclError
 from tkinter import ttk
+import _tkinter
 
 class _System():
     
@@ -72,6 +73,7 @@ class _DrawApp():
         self.selected_file = '' 
         self.selected_objects : list = [] 
         self._load_icons()
+        self.was_selected = False
         self.TopSide(master=self.app)
         self.LeftSide(master=self.app)
         self.CenterSide(master=self.app)
@@ -305,7 +307,11 @@ class _DrawApp():
         def btn_exit():
             msg = CTkMessagebox(message='¿Deseas salir?', title='Salir', option_1='Yes', option_2='No', icon='warning')
             if msg.get() == 'Yes':
+
+                self.selected_file = None 
+                self.selected_objects = []
                 master.destroy()
+                return 
 
         # Botón Salir
         ButtonExit = ctk.CTkButton(master=TopBar, text='Exit', font=('Hack Nerd Font', 15), width=70, command=btn_exit, hover_color='red')
@@ -576,8 +582,8 @@ class _DrawApp():
 
             if self.tool_tip:
                 try:
-                    CTkToolTip(widget=boton, message=self._get_info(ruta=ruta_completa))
-                except TclError:
+                    boton.bind("<Enter>", lambda _, b=boton, p=ruta_completa: self.set_tooltip(widget=b, path=p))
+                except _tkinter.TclError:
                     pass
 
             if self.method in ['askopenfilenames', 'askopenfiles']:
@@ -701,7 +707,7 @@ class _MiniDialog():
         ok_btn = ctk.CTkButton(btn_frame, text="OK", command=self._on_select)
         ok_btn.pack(side=ctk.RIGHT)
 
-        ctk.CTkButton(btn_frame, text="Cancel", command=self.master.destroy).pack(
+        ctk.CTkButton(btn_frame, text="Cancel", command=self._on_cancel).pack(
             side=ctk.RIGHT, padx=10
         )
 
@@ -766,7 +772,7 @@ class _MiniDialog():
         self.tree.selection_set(item_id)
         self.tree.see(item_id)
 
-        self.selected_item = path  # <-- esta línea es clave
+        self.selected_item = path 
 
         if self.method in ['askopenfilename', 'asksaveasfilename', 'asksaveasfile', 'askopenfile'] and os.path.isfile(path):
             self.selected_path = path
@@ -780,7 +786,6 @@ class _MiniDialog():
             self.list_files()
         else:
             # Opcional: mostrar advertencia
-            CTkMessagebox(message='No such file or directory', title='Error', icon='cancel')
             return 
 
     def _on_cancel(self):
@@ -797,16 +802,28 @@ class _MiniDialog():
         self.tree_frame.pack(fill=ctk.BOTH, expand=True, padx=10, pady=5)
 
         style = ttk.Style()
-        style.configure("Treeview",
-                        background="#242424",
-                        foreground="#FFFFFF",         # Texto normal
-                        fieldbackground="#242424",
-                        bordercolor="#242424",
-                        rowheight=30)
-        style.map("Treeview",
-            background=[('selected', '#444444')],   # Fondo al seleccionar
-            foreground=[('selected', '#FFFFFF')])
+        mode = ctk.get_appearance_mode()
 
+        if mode == 'Dark':
+            style.configure("Treeview",
+                            background="#242424",
+                            foreground="#FFFFFF",
+                            fieldbackground="#242424",
+                            bordercolor="#242424",
+                            rowheight=30)
+            style.map("Treeview",
+                background=[('selected', '#444444')],
+                foreground=[('selected', '#FFFFFF')])
+        else:  # Light mode
+            style.configure("Treeview",
+                            background="#FFFFFF",
+                            foreground="#000000",
+                            fieldbackground="#FFFFFF",
+                            bordercolor="#DDDDDD",
+                            rowheight=30)
+            style.map("Treeview",
+                background=[('selected', '#E0E0E0')],
+                foreground=[('selected', '#000000')])
         self.tree = ttk.Treeview(self.tree_frame, show="tree", selectmode='extended' if self.method in ['askopenfilenames', 'askopenfiles'] else 'browse')
         self.tree.bind("<Double-1>", self._on_click)
         self.tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
