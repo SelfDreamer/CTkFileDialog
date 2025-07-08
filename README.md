@@ -199,13 +199,13 @@ app.mainloop()
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="./Images/NormalDialogDark.png" width="80%">
+  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/NormalDialogDark.png" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="./Images/NormalDialogLight.png" width="80%">
+  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/NormalDialogLight.png" width="80%">
 </p>
 
 ---
@@ -242,13 +242,13 @@ This is a parameter of the file dialog, but it's more powerful than the default 
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="./Images/MiniDialogDark.png" width="80%">
+  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/MiniDialogDark.png" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="./Images/MiniDialogLight.png" width="80%">
+  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/MiniDialogLight.png" width="80%">
 </p>
 
 The mini design wasn't created by me; it was created by this user, and all credit goes to him. I also want to thank him for creating that design in advance.
