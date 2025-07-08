@@ -199,13 +199,13 @@ app.mainloop()
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5a2ac3eb-aeac-4ec9-a8ac-0d7a153022ab" width="80%">
+  <img src="./Images/NormalDialogDark.png" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a942c9f0-533a-49a1-bbe1-a5e2c4383975" width="80%">
+  <img src="./Images/NormalDialogLight.png" width="80%">
 </p>
 
 ---
@@ -242,13 +242,13 @@ This is a parameter of the file dialog, but it's more powerful than the default 
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a90d456f-217e-42e7-9ba2-ea0adb65c411" width="80%">
+  <img src="./Images/MiniDialogDark.png" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/2408dd3b-9779-47d5-aa9a-ec962a6dd2c0" width="80%">
+  <img src="./Images/MiniDialogLight.png" width="80%">
 </p>
 
 The mini design wasn't created by me; it was created by this user, and all credit goes to him. I also want to thank him for creating that design in advance.

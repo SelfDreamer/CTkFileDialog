@@ -9,7 +9,25 @@ from CTkToolTip import *
 from typing import Any, Literal, Optional, TextIO, List
 from _tkinter import TclError
 from tkinter import ttk
-import _tkinter
+import _tkinter 
+
+class _CustomToolTip(CTkToolTip):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _show(self) -> None:
+        if not self.widget.winfo_exists():
+            self.hide()
+            self.destroy()
+
+        if self.status == "inside" and time.time() - self.last_moved >= self.delay:
+            self.status = "visible"
+            try: 
+                self.deiconify()
+            except _tkinter.TclError: 
+                pass
+
 
 class _System():
     
@@ -73,11 +91,15 @@ class _DrawApp():
         self.selected_file = '' 
         self.selected_objects : list = [] 
         self._load_icons()
-        self.was_selected = False
+        self._temp_item = None 
+        self._temp_items =  [] 
         self.TopSide(master=self.app)
         self.LeftSide(master=self.app)
         self.CenterSide(master=self.app)
-        self.app.grab_set()
+        try: 
+            self.app.grab_set()
+        except _tkinter.TclError:
+            pass
 
     @staticmethod
     def _is_image(image : str) -> bool :
@@ -90,7 +112,6 @@ class _DrawApp():
             return True
         except:
             return False
-
     def _load_icons(self):
         icon_path = self._BASE_DIR / "icons"  
 
@@ -174,20 +195,23 @@ class _DrawApp():
             self.update_entry(ruta=self.current_path)
             self.__list__(master)
 
+
     def navigate_to(self, ruta: str, master):
-        try: 
+        try:
+            ruta = os.path.abspath(os.path.expanduser(os.path.expandvars(ruta)))
+            
+            # Si es un directorio
             if os.path.isdir(ruta):
                 if self.method == 'askdirectory':
-                    self.selected_file = ruta
+                    self._temp_item = ruta
                 self.current_path = Path(ruta)
                 self.update_entry(ruta=self.current_path)
                 self.__list__(master)
+                return
 
-                return 
-
-            if self.method == 'asksaveasfile':
-
-                if os.path.isfile(ruta) and os.path.exists(ruta):
+            # Si es un archivo y estamos en modo guardar como archivo
+            if self.method in ['asksaveasfile', 'asksaveasfilename']:
+                if os.path.isfile(ruta):
                     msg = CTkMessagebox(
                         message='Este archivo existe. ¿Deseas sobreescribirlo?',
                         icon='warning',
@@ -197,68 +221,70 @@ class _DrawApp():
                     )
                     if msg.get() == 'No':
                         return
-                
-                self.selected_file = ruta 
+                self._temp_item = ruta
                 self.close_app()
+                return
 
-            elif self.method == 'asksaveasfilename':
-                if os.path.isfile(ruta):
-                    msg = CTkMessagebox(message='Este archivo existe ¿Deseas sobreescribirlo?', icon='warning', title='Avertencia', option_1='Yes', option_2='No')
-                    
-                    if msg.get() == 'No':
-                        return
-
-                    self.selected_file = ruta 
-                    self.close_app()
-
-            elif self.method == 'askopenfile':
-                try:
-                    
-                    if not os.path.isfile(path=ruta): 
-                        raise FileNotFoundError(f"{ruta}: No such file or directory!")
-
-                    self.selected_file = ruta
-                    self.close_app()
-                except FileNotFoundError:
+            # Si es abrir archivo
+            if self.method == 'askopenfile':
+                if not os.path.isfile(ruta):
                     self.__BAR__()
-                    CTkMessagebox(message='Directorio no encontrado!', title='Error', icon='cancel')
+                    CTkMessagebox(message='File not found haha!', title='Error', icon='cancel')
+                    self.PathEntry.delete(0, ctk.END)
+                    self.PathEntry.insert(0, self.current_path)
+                    return 
 
-            elif os.path.isfile(ruta):
-                self.selected_file = ruta
-                self.update_entry(self.selected_file)
+                self._temp_item = ruta
+                self.update_entry(self._temp_item)
+                return
 
-            else:
-                self.PathEntry.delete(0, 'end')
-                self.PathEntry.insert(0, self.current_path)
-                self.PathEntry.configure(state='normal')
-                self.__BAR__()
-                CTkMessagebox(message='No such file or directory!', title='Error', icon='cancel')
+            # Otro archivo válido
+            if os.path.isfile(ruta):
+                self._temp_item = ruta
+                self.update_entry(self._temp_item)
+                return
+
+            # Ruta no válida o archivo no existente
+            self.PathEntry.delete(0, 'end')
+            self.PathEntry.insert(0, str(self.current_path))
+            self.PathEntry.configure(state='normal')
+            self.__BAR__()
+            CTkMessagebox(message='No such file or directory!', title='Error', icon='cancel')
+
         except PermissionError:
             self.__BAR__()
             CTkMessagebox(message='Permiso denegado!', title='Error', icon='cancel')
+        except FileNotFoundError: 
+            self.__BAR__()
+            CTkMessagebox(message='File Not Found!', title='Error', icon='cancel')
 
     def close_app(self):
-
         if self.method == 'asksaveasfilename':
             if not os.path.isdir(self.PathEntry.get()): self.selected_file = self.PathEntry.get()
 
-        if self.selected_file:
+        if self._temp_item:
 
             self.app.destroy()
             if self.method == 'asksaveasfile':
-                return self.selected_file 
+                self.selected_file = self._temp_item
+                return 
             elif self.method == 'askopenfile':
-                return self.selected_file 
+                self.selected_file = self._temp_item
             else:
-                selected_file = self._fix_format(self.selected_file)
-                return selected_file
+                self.selected_file = self._fix_format(self._temp_item)
+                return
 
-        elif len(self.selected_objects) >= 1:
+        if len(self._temp_items) >= 1:
             self.app.destroy()
-            if self.method == "askopenfilenames":
-                selected_objects = [f for f in self.selected_objects if self._fix_format(f)]
-
-            return self.selected_objects if self.method == 'askopenfiles' else selected_objects
+            if self.method == "askopenfilenames" or self.method ==  "askopenfiles":
+                seen = set()
+                self.selected_objects = [
+                    f for f in self._temp_items
+                    if not os.path.isdir(f) and f not in seen and not seen.add(f)
+                ]
+                
+                return
+            
     
     @staticmethod
     def _is_video(video: str):
@@ -296,7 +322,7 @@ class _DrawApp():
         self.PathEntry.delete(0, ctk.END)
         self.PathEntry.insert(0, path)
         
-        self.selected_file = path
+        self._temp_item = path 
 
         return "break"
 
@@ -310,6 +336,8 @@ class _DrawApp():
 
                 self.selected_file = None 
                 self.selected_objects = []
+                self._temp_item = None 
+                self._temp_items = []
                 master.destroy()
                 return 
 
@@ -330,7 +358,6 @@ class _DrawApp():
         # Boton de Ok 
         ButtonOk = ctk.CTkButton(master=TopBar, text='Ok', font=('Hack Nerd Font', 15), width=70, command = lambda: self.close_app())
         ButtonOk.pack(side='left', fill='x', padx=10, pady=10)
-        self.app.bind('<Return>', lambda _: self.navigate_to(ruta=self.PathEntry.get(), master=master))
 
         if self.autocomplete:
             
@@ -384,7 +411,7 @@ class _DrawApp():
 
         # Título
         LabelSide = ctk.CTkLabel(master=LeftSideFrame, text='Lugares', font=('Hack Nerd Font', 15))
-        LabelSide.pack(side='top', padx=5, pady=5)
+        LabelSide.pack(side=ctk.TOP, padx=5, pady=5)
 
         iconos = {
             os.getenv("USER"): "",  # HOME del usuario
@@ -397,10 +424,10 @@ class _DrawApp():
             "Templates": "", "Plantillas": "",
             "Public": "", "Público": "",
         }
-        # Botones por cada carpeta
+
         for nombre, ruta in carpetas.items():
-            icono = iconos.get(nombre, "")  # Icono por defecto si no está en el diccionario
-            texto_boton = f"    {icono}  {nombre}"  # Espacio entre icono y nombre
+            icono = iconos.get(nombre, "")  
+            texto_boton = f"    {icono}  {nombre}"  
             DirectorySide = ctk.CTkButton(
                 master=LeftSideFrame,
                 text=texto_boton,
@@ -411,7 +438,7 @@ class _DrawApp():
                 text_color="#000000" if self.current_theme.lower() == 'light' else '#cccccc',
                 corner_radius=2,
                 border_width=0,
-                command=lambda r=ruta, n=nombre: self.navigate_to(ruta=r, master=master)#print(f"{n} => {r}")
+                command=lambda r=ruta, n=nombre: self.navigate_to(ruta=r, master=master)
             )
             DirectorySide.pack(fill="x", pady=4)
     def event_scroll(self, event=None):
@@ -420,10 +447,11 @@ class _DrawApp():
         def scroll_and_check(event):
             canvas.yview_scroll(-int(event.delta / 120), "units")
             self._verificar_scroll(self.app)
+        
 
-        canvas.bind_all("<MouseWheel>", scroll_and_check)
-        canvas.bind_all("<Button-4>", lambda event: (canvas.yview_scroll(-1, "units"), self._verificar_scroll(self.app)))
-        canvas.bind_all("<Button-5>", lambda event: (canvas.yview_scroll(1, "units"), self._verificar_scroll(self.app)))
+        canvas.bind("<MouseWheel>", scroll_and_check)
+        canvas.bind("<Button-4>", lambda event: (canvas.yview_scroll(-1, "units"), self._verificar_scroll(self.app)))
+        canvas.bind("<Button-5>", lambda event: (canvas.yview_scroll(1, "units"), self._verificar_scroll(self.app)))
 
     def CenterSide(self, master: ctk.CTkToplevel) -> None:
         self.CenterSideFrame = ctk.CTkScrollableFrame(master=master)
@@ -439,31 +467,33 @@ class _DrawApp():
     def __clear__(self):
 
         for widget in self.content_frame.winfo_children():
-            widget.destroy()
+            try: 
+                widget.destroy()
+            except (_tkinter.TclError, Exception):
+                pass
 
     def _handle_click(self, event, r, master, boton, tool_tip=None):
-
-        if not event.state & 0x0004: self.selected_objects.clear()
+        if not event.state & 0x0004: 
+            self._temp_items.clear()
+            self.selected_objects.clear()
 
         if event.state & 0x0004:
 
-            self._all_buttons.append(boton)
-
-            if self.method == 'askopenfiles':
-
-                if r not in self.selected_objects: 
-                    if not os.path.isdir(r): self.selected_objects.append(r)
-
+            if self.method in  ['askopenfilenames', 'askopenfiles']:
+                if r not in self._temp_items: 
+                    self._temp_items.append(r)
                 boton.configure(fg_color="blue")
+                return 
 
-            elif self.method == 'askopenfilenames':
+            if boton not in self._all_buttons: 
+                self._all_buttons.append(boton)
 
-                if (r not in self.selected_objects) and (not os.path.isdir(r)): self.selected_objects.append(r)
-                boton.configure(fg_color="blue")
 
         else:
-            self.selected_objects.clear()
-            if self.method == 'askopenfilenames': self.selected_objects.append(r)
+            self._temp_items.clear()
+            if self.method in ['askopenfilenames', 'askopenfiles']:
+                self._temp_items.append(r)
+
             for btn in self._all_buttons:
                 if btn.winfo_exists():
                     btn.configure(fg_color="transparent",
@@ -473,10 +503,10 @@ class _DrawApp():
             if os.path.isdir(r): 
                 self.navigate_to(ruta=r, master=master)
             else:
-                self.selected_objects.append(r)
+                self._temp_items.append(r)
 
     def set_tooltip(self, path: str, widget: Any):
-        CTkToolTip(widget=widget, message=self._get_info(ruta=path) )
+        _CustomToolTip(widget=widget, message=self._get_info(ruta=path) )
 
     @staticmethod
     def _get_info(ruta: str) -> str:
@@ -599,15 +629,18 @@ class _DrawApp():
             cantidad -= 1
 
     def _verificar_scroll(self, master):
-        canvas = self.CenterSideFrame._parent_canvas
-        yview = canvas.yview()
-        if yview[1] > 0.98 and self.LOADED < len(self.archivos):
-            self._cargar_archivos(master, cantidad=5)
+        try: 
+            canvas = self.CenterSideFrame._parent_canvas
+            yview = canvas.yview()
+            if yview[1] > 0.98 and self.LOADED < len(self.archivos):
+                self._cargar_archivos(master, cantidad=5)
+        except _tkinter.TclError:
+             pass
 
 
     def __list__(self, master: ctk.CTkToplevel) -> None:
         self.LOADED = 0
-        self.BATCH = 50  # cantidad inicial
+        self.BATCH = 50  
         self.selected_objects.clear()
         self._all_buttons.clear()
         self.__BAR__()
@@ -772,11 +805,7 @@ class _MiniDialog():
         self.tree.selection_set(item_id)
         self.tree.see(item_id)
 
-        self.selected_item = path 
-
-        if self.method in ['askopenfilename', 'asksaveasfilename', 'asksaveasfile', 'askopenfile'] and os.path.isfile(path):
-            self.selected_path = path
-        
+        self.selected_item = path
         return "break"
 
     def _on_enter_path(self):
@@ -833,59 +862,64 @@ class _MiniDialog():
         return tk.PhotoImage(file=image)
     
     def _on_select(self):
-        if self.method in ['asksaveasfile', 'asksaveasfilename']:
-            path = self.path_entry.get().strip()
+        # Obtener ruta escrita (si aplica)
+        path = self.path_entry.get().strip() if hasattr(self, "path_entry") else ""
 
-            if not path:
-                return  
-
+        # Expandir variables y rutas de usuario
+        if path:
             path = os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
-
             if not os.path.dirname(path):
                 path = os.path.join(self.initial_dir, path)
 
-            if os.path.isdir(path):
-                return 
+        # --- Guardar archivos ---
+        if self.method in ['asksaveasfile', 'asksaveasfilename']:
+            if not path or os.path.isdir(path):
+                return
 
-            if os.path.exists(path=path) and self._extra_method != 'askopenfile':
-                opts = CTkMessagebox(message='This file exists now! Do you wanna rescribe?', title='Error', icon='warning', option_1='Yes', option_2='No')
-                if opts.get() == 'No':  
-                    return 
+            # Verificar si el archivo existe
+            if os.path.exists(path) and self._extra_method != 'askopenfile':
+                opts = CTkMessagebox(
+                    message='This file exists now! Do you wanna rescribe?',
+                    title='Error',
+                    icon='warning',
+                    option_1='Yes',
+                    option_2='No'
+                )
+                if opts.get() == 'No':
+                    return
 
             self.selected_path = path
             self.master.destroy()
             return
-        
-        if self.method not in ['askopenfilenames', 'askopenfiles']:
-            if not self.selected_item:
-                return 
-    
-        if self.method in ['askopenfilename', 'asksaveasfilename', 'asksaveasfile', 'askopenfile'] and os.path.isfile(self.selected_item):
-            self.selected_path = self.selected_item
-        
-            if self.selected_path:
-                self.master.destroy()
-                return 
 
-        if self.method in ['askdirectory'] and os.path.isdir(self.selected_item):
-            self.selected_path = self.selected_item
-
-            if self.selected_path: 
-                self.master.destroy()
-                return 
-
-        if self.method in ['askopenfiles', 'askopenfilenames']:
-            self.selected_items = self.tree.selection()
-            
-            self.selected_paths = [
+        # --- Selección múltiple de archivos ---
+        elif self.method in ['askopenfiles', 'askopenfilenames']:
+            selected_items = self.tree.selection()
+            selected_paths = [
                 self.absolute_paths[self.tree.index(item)]
-                for item in self.selected_items
+                for item in selected_items
                 if os.path.isfile(self.absolute_paths[self.tree.index(item)])
-                            ]
+            ]
 
-            if self.selected_paths: 
+            if selected_paths:
+                self.selected_paths = selected_paths
                 self.master.destroy()
-                return 
+            return
+
+        # --- Selección única (archivo o carpeta) ---
+        elif self.method in ['askopenfilename', 'askopenfile', 'askdirectory']:
+            if not self.selected_item:
+                return
+
+            if self.method == 'askdirectory' and os.path.isdir(self.selected_item):
+                self.selected_path = self.selected_item
+                self.master.destroy()
+                return
+
+            elif self.method in ['askopenfilename', 'askopenfile'] and os.path.isfile(self.selected_item):
+                self.selected_path = self.selected_item
+                self.master.destroy()
+                return
 
     def _on_click(self, event=None):
         selected_item = self.tree.focus()

@@ -1,9 +1,23 @@
-#!/usr/bin/env python
-from io import *
-from pathlib import Path
-from .Dialog import *
-from .Dialog import _DrawApp, _MiniDialog
-import os 
+'''
+File dialog created in custom Tkinter and inspired by the Tkinter dialog.
+
+- Version: 1.8.0 
+- Author: Flick
+- Github: https://github.com/FlickGMD/CTkFileDialog
+'''
+
+__all__ = [
+        'askopenfilename',
+        'askdirectory',
+        'askopenfile',
+        'askopenfiles',
+        'askopenfilenames',
+        'asksaveasfile',
+        'asksaveasfilename', 
+        'Constants'
+        ]
+
+from .Dialog import _DrawApp, _MiniDialog, Literal, Optional, List, Path 
 
 def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
                     filetypes: Optional[List[str]] = None,
@@ -238,15 +252,15 @@ def asksaveasfile(style: Optional[Literal['Default', 'Mini']] = 'Default',
 
 def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default', 
                 mode: Literal['r', 'rb', 'r+', 'rb+', 'r+b','w', 'wb', 'w+', 'wb+','a', 'ab', 'a+', 'ab+','x', 'xb'] = 'r',
-                  hidden: bool = False,
-                  filetypes: Optional[List[str]] = None,
-                  preview_img: bool = False,
-                  autocomplete: bool = False,
-                  video_preview: bool = False,
-                  initial_dir: str = str(Path.cwd()),
-                  tool_tip: bool = False,
-                  **kwargs,
-                  ):
+                hidden: bool = False,
+                filetypes: Optional[List[str]] = None,
+                preview_img: bool = False,
+                autocomplete: bool = False,
+                video_preview: bool = False,
+                initial_dir: str = str(Path.cwd()),
+                tool_tip: bool = False,
+                **kwargs,
+                ):
     """
     Displays an open file dialog and returns an open file object.
 
@@ -326,7 +340,7 @@ def askopenfiles(style: Optional[Literal['Default', 'Mini']] = 'Default',
         ...         f.close()
     """
     if style == 'Default': 
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfiles', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilenames', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
         app.app.wait_window()
     
         return tuple(open(f, mode=mode, **kwargs) for f in app.selected_objects) if app.selected_objects else None

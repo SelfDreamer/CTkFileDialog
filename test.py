@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 import customtkinter as ctk
 import CTkFileDialog
-from CTkFileDialog.Constants import HOME 
+from CTkFileDialog.Constants import HOME, PWD
 
 def open_mini_file() -> None:
-    f = CTkFileDialog.askopenfilename(style='Mini', autocomplete=True, initial_dir='.')
-    if f:
-        print(f"[+] Selected file ->", f)
+    file = CTkFileDialog.askopenfilename(style='Mini', autocomplete=True, initial_dir=PWD)
+    if file:
+        print(f"[+] Selected file -> %s" % file)
 
 def open_normal_file() -> None:
-    f = CTkFileDialog.askopenfilename(style='Default', autocomplete=True, initial_dir=HOME, tool_tip=True)
-    if f:
-        print(f"[+] Selected file ->", f)
+    file = CTkFileDialog.askopenfilename(style='Default', autocomplete=True, tool_tip=True, initial_dir=HOME)
+    if file: 
+        print(f"[+] Selected file -> %s" % file)
 
 def toggle_theme():
     current = theme_switch.get()
