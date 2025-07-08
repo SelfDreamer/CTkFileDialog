@@ -251,7 +251,7 @@ This is a parameter of the file dialog, but it's more powerful than the default 
   <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/MiniDialogLight.png" width="80%">
 </p>
 
-The mini design wasn't created by me; it was created by this user, and all credit goes to him. I also want to thank him for creating that design in advance.
+The mini design wasn't created by me; it was created by this [user](https://github.com/limafresh), and all credit goes to him. I also want to thank him for creating that design in advance.
 
 ---
 
