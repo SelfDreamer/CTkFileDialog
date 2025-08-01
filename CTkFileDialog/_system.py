@@ -1,124 +1,72 @@
 import os
 import platform
 import ctypes
+from pathlib import Path
 
-def get_owner(path):
+def find_owner(path) -> str:
     system = platform.system()
-    if system == "Windows":
-        return get_owner_windows(path)
-    elif system in ("Linux", "Darwin"):
-        return get_owner_unix(path)
-    else:
-        return f"Plataforma no soportada: {system}"
+    path = str(path)
 
-# --- Windows ---
-def get_owner_windows(path):
-    import ctypes.wintypes as wintypes
+    if system == "Windows":
+        return _get_windows_owner(path)
+    else:
+        return _get_unix_owner(path)
+    
+def _get_unix_owner(path: str) -> str:
+    try:
+        p = Path(path)
+        return f"{p.owner()}"
+    except Exception:
+        return "unknown:unknown"
+
+def _get_windows_owner(path: str) -> str:
+    import ctypes
+    from ctypes import wintypes
+
+    GetNamedSecurityInfoW = ctypes.windll.advapi32.GetNamedSecurityInfoW
+    LookupAccountSidW = ctypes.windll.advapi32.LookupAccountSidW
+    LocalFree = ctypes.windll.kernel32.LocalFree
 
     OWNER_SECURITY_INFORMATION = 0x00000001
+    SE_FILE_OBJECT = 1
 
-    path = os.path.abspath(path)
-    lpFileName = ctypes.c_wchar_p(path)
+    pSidOwner = ctypes.c_void_p()
+    pSD = ctypes.c_void_p()
 
-    needed = wintypes.DWORD(0)
-    ctypes.windll.advapi32.GetFileSecurityW(lpFileName, OWNER_SECURITY_INFORMATION, None, 0, ctypes.byref(needed))
+    result = GetNamedSecurityInfoW(
+        ctypes.c_wchar_p(path),
+        SE_FILE_OBJECT,
+        OWNER_SECURITY_INFORMATION,
+        ctypes.byref(pSidOwner),
+        None, None, None,
+        ctypes.byref(pSD)
+    )
 
-    if needed.value == 0:
-        return "Error: no se pudo determinar el tamaño del descriptor"
+    if result != 0:
+        return "unknown"
 
-    security_descriptor = ctypes.create_string_buffer(needed.value)
-    if not ctypes.windll.advapi32.GetFileSecurityW(lpFileName, OWNER_SECURITY_INFORMATION, security_descriptor, needed, ctypes.byref(needed)):
-        return "Error al obtener el descriptor de seguridad"
-
-    pOwner = ctypes.c_void_p()
-    ownerDefaulted = wintypes.BOOL()
-    if not ctypes.windll.advapi32.GetSecurityDescriptorOwner(security_descriptor, ctypes.byref(pOwner), ctypes.byref(ownerDefaulted)):
-        return "Error al obtener propietario"
-
-    name_size = wintypes.DWORD(0)
-    domain_size = wintypes.DWORD(0)
+    name = ctypes.create_unicode_buffer(256)
+    domain = ctypes.create_unicode_buffer(256)
+    name_size = wintypes.DWORD(len(name))
+    domain_size = wintypes.DWORD(len(domain))
     sid_name_use = wintypes.DWORD()
-    ctypes.windll.advapi32.LookupAccountSidW(None, pOwner, None, ctypes.byref(name_size), None, ctypes.byref(domain_size), ctypes.byref(sid_name_use))
 
-    name = ctypes.create_unicode_buffer(name_size.value)
-    domain = ctypes.create_unicode_buffer(domain_size.value)
+    success = LookupAccountSidW(
+        None,
+        pSidOwner,
+        name,
+        ctypes.byref(name_size),
+        domain,
+        ctypes.byref(domain_size),
+        ctypes.byref(sid_name_use)
+    )
 
-    if not ctypes.windll.advapi32.LookupAccountSidW(None, pOwner, name, ctypes.byref(name_size), domain, ctypes.byref(domain_size), ctypes.byref(sid_name_use)):
-        return "Error al buscar SID"
+    LocalFree(pSD)
 
-    return f"{domain.value}\\{name.value}" if domain.value else name.value
+    if not success:
+        return "unknown"
 
-def get_owner_unix(path):
-    import ctypes
-    import ctypes.util
-    import os
-
-    libc_path = ctypes.util.find_library("c")
-    if not libc_path:
-        return "No se encontró libc"
-
-    libc = ctypes.CDLL(libc_path, use_errno=True)
-
-    class Stat(ctypes.Structure):
-        _fields_ = [
-            ("st_dev", ctypes.c_ulong),
-            ("st_ino", ctypes.c_ulong),
-            ("st_nlink", ctypes.c_ulong),
-            ("st_mode", ctypes.c_uint),
-            ("st_uid", ctypes.c_uint),
-            ("st_gid", ctypes.c_uint),
-            ("st_rdev", ctypes.c_ulong),
-            ("st_size", ctypes.c_long),
-            ("st_blksize", ctypes.c_long),
-            ("st_blocks", ctypes.c_long),
-            ("st_atime", ctypes.c_long),
-            ("st_mtime", ctypes.c_long),
-            ("st_ctime", ctypes.c_long),
-        ]
-
-    class Passwd(ctypes.Structure):
-        _fields_ = [
-            ("pw_name", ctypes.c_char_p),
-            ("pw_passwd", ctypes.c_char_p),
-            ("pw_uid", ctypes.c_uint),
-            ("pw_gid", ctypes.c_uint),
-            ("pw_gecos", ctypes.c_char_p),
-            ("pw_dir", ctypes.c_char_p),
-            ("pw_shell", ctypes.c_char_p),
-        ]
-
-    libc.stat.argtypes = [ctypes.c_char_p, ctypes.POINTER(Stat)]
-    libc.stat.restype = ctypes.c_int
-
-    statbuf = Stat()
-
-    # Validar ruta
-    path_bytes = path.encode()
-    if not os.path.exists(path):
-        return f"Ruta inválida: {path}"
-
-    # Llamar a stat
-    if libc.stat(path_bytes, ctypes.byref(statbuf)) != 0:
-        errno = ctypes.get_errno()
-        return f"Error al hacer stat(): {os.strerror(errno)}"
-
-    # Llamar a getpwuid
-    libc.getpwuid.argtypes = [ctypes.c_uint]
-    libc.getpwuid.restype = ctypes.POINTER(Passwd)
-
-    pw_ptr = libc.getpwuid(statbuf.st_uid)
-
-    # Protección fuerte contra puntero nulo
-    if not pw_ptr:
-        return f"UID sin nombre ({statbuf.st_uid})"
-
-    try:
-        pw_name = pw_ptr.contents.pw_name
-        if not pw_name:
-            return f"Nombre vacío para UID {statbuf.st_uid}"
-        return pw_name.decode("utf-8", errors="replace")
-    except Exception as e:
-        return f"Error al decodificar nombre: {e}"
+    return f"{name.value}"
 
 def get_permissions(path):
     system = platform.system()

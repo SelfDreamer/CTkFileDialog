@@ -10,6 +10,7 @@ from typing import Any, Literal, Optional, TextIO, List
 from _tkinter import TclError
 from tkinter import ttk
 import _tkinter 
+from ._system import find_owner
 
 class _CustomToolTip(CTkToolTip):
 
@@ -401,10 +402,10 @@ class _DrawApp():
                                 carpetas[nombre] = ruta
 
         elif platform.system() == 'Windows':
-
+            home = Path.home()
             win_carpetas = {
                 "Home": str(home),
-                "Desktop": str(home / "Desktop"),
+                "Desktop": home / "Desktop",
                 "Documents": str(home / "Documents"),
                 "Downloads": str(home / "Downloads"),
                 "Pictures": str(home / "Pictures"),
@@ -414,7 +415,6 @@ class _DrawApp():
 
             for k, v in win_carpetas.items():
                 carpetas[k] = v
-
 
         # Título
         LabelSide = ctk.CTkLabel(master=LeftSideFrame, text='Lugares', font=('Hack Nerd Font', 15))
@@ -518,7 +518,7 @@ class _DrawApp():
             st = os.stat(ruta)
 
             # Usuario propietario
-            #usuario = get_owner(ruta)
+            owner = find_owner(ruta)
 
             # Permisos (ej: -rw-r--r--)
             #permisos = get_permissions(ruta)
@@ -528,6 +528,7 @@ class _DrawApp():
     
             return f"""File: {os.path.basename(ruta)}
     creation: {fecha}
+    owner: {owner}
     path: {ruta}
                     """
         except Exception as e:
@@ -809,6 +810,7 @@ class _MiniDialog():
         self.tree_frame.pack(fill=ctk.BOTH, expand=True, padx=10, pady=5)
 
         style = ttk.Style()
+        style.theme_use('clam')
         mode = ctk.get_appearance_mode()
 
         if mode == 'Dark':
