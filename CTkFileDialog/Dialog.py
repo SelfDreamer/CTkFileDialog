@@ -190,9 +190,6 @@ class _DrawApp():
 
 
     def navigate_to(self, ruta: str, master):
-        if ruta == self.PathEntry.get():
-            return 
-
         try:
             ruta = os.path.abspath(os.path.expanduser(os.path.expandvars(ruta)))
             
