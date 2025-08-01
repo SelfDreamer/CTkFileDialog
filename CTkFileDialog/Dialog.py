@@ -404,17 +404,17 @@ class _DrawApp():
         elif platform.system() == 'Windows':
             home = Path.home()
             win_carpetas = {
-                "Home": str(home),
+                home.name: str(home),  
                 "Desktop": home / "Desktop",
-                "Documents": str(home / "Documents"),
-                "Downloads": str(home / "Downloads"),
-                "Pictures": str(home / "Pictures"),
-                "Music": str(home / "Music"),
-                "Videos": str(home / "Videos"),
+                "Documents": home / "Documents",
+                "Downloads": home / "Downloads",
+                "Pictures": home / "Pictures",
+                "Music": home / "Music",
+                "Videos": home / "Videos",
             }
 
-            for k, v in win_carpetas.items():
-                carpetas[k] = v
+            carpetas = {}
+            carpetas = {k: v  for k, v in win_carpetas.items()}
 
         # Título
         LabelSide = ctk.CTkLabel(master=LeftSideFrame, text='Lugares', font=('Hack Nerd Font', 15))
