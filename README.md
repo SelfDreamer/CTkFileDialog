@@ -1,10 +1,8 @@
-
 <h1 align="center">CTkFileDialog</h1>
 
 <h3 align="center">A modern and fully customizable File Dialog for CustomTkinter — a must-have extension pack!</h3>
 
-> **⚠️ Warning:**  
-> This project is currently only supported on **Linux**. It has **not yet been tested on Windows**.
+> [!WARNING]
 > Unfortunately parameters like video_preview or preview_img, and tooltip are not compatible with the mini dialog and will not be applied.
 
 ---
@@ -23,19 +21,30 @@
 
 ```bash
 
+# Using bash 
 git clone https://github.com/FlickGMD/CTkFileDialog
 cd CTkFileDialog
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
 
+# On Windows 
+git clone https://github.com/FlickGMD/CTkFileDialog 
+cd CTkFileDialog
+python3 -m venv .venv 
+.\.venv\Scripts\activate.ps1 # In Powershell
+pip3 install -r requirements.txt 
+
 # Or ussing pip 
 
 python3 -m venv .venv 
-source .venv/bin/activate 
+source .venv/bin/activate # In powershell -> .\.venv\Scripts\activate.ps1
 pip3 install CTkFileDialog 
 
 ```
+
+> [!WARNING]
+> You should install the [Hack Nerd Fonts](https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip) if u wanna see the icons without problems :) 
 
 ---
 
@@ -232,6 +241,25 @@ ctk.CTkButton(master=root, command=open_file, text="Open File").pack(padx=10, pa
 
 root.mainloop()
 ```
+
+## And here are the constants available from the package
+
+<div align="center">
+
+
+| Parameter       | Description                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| `PWD`        | Current working directory (e.g., where the program was launched)                     |
+| `HOME`   | User's home directory (e.g., /home/user or C:\Users\user)                               |
+| `TEMP` | Temporary directory (fallback to /tmp if no env vars are set)               |
+| `CONFIG_DIR`  | XDG-compliant user configuration directory (default: ~/.config)                   |
+| `CACHE_DIR`   | XDG-compliant user cache directory (default: ~/.cache)                       |
+| `PATH`   | System PATH split into a list of directories                         |
+| `DATA_DIR`   | XDG-compliant user data directory (default: ~/.local/share)                        |
+| `VENV`   | Active Python virtual environment (venv or conda), fallback to PWD                        |
+
+
+</div>
 
 --- 
 
