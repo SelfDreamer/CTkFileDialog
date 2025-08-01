@@ -64,7 +64,9 @@ class _DrawApp():
                  preview_img: bool = False,
                  autocomplete: bool = False,
                  video_preview: bool = False,
-                 tool_tip: bool = False) -> None:
+                 tool_tip: bool = False,
+                 title: str = 'CTkFileDialog',
+                 geometry: str = '1320x720') -> None:
         
         self.current_path = current_path
 
@@ -88,7 +90,8 @@ class _DrawApp():
         self.method = method 
         self.current_theme = ctk.get_appearance_mode()
         self.app = ctk.CTkToplevel()
-        self.app.geometry('1320x720')
+        self.app.title(string=title)
+        self.app.geometry(geometry)
         self.selected_file = '' 
         self.selected_objects : list = [] 
         self._load_icons()
@@ -187,6 +190,9 @@ class _DrawApp():
 
 
     def navigate_to(self, ruta: str, master):
+        if ruta == self.PathEntry.get():
+            return 
+
         try:
             ruta = os.path.abspath(os.path.expanduser(os.path.expandvars(ruta)))
             
@@ -653,10 +659,13 @@ class _MiniDialog():
                  filetypes: Optional[List[str]] = None,
                  autocomplete: bool = False,
                  initial_dir: str = '.',
-                 _extra_method: str = ''):
+                 _extra_method: str = '',
+                 geometry: str = '500x400',
+                 title: str = 'CTkFileDialog'):
         
         self.master = ctk.CTkToplevel()
-        self.master.geometry(geometry_string='500x400')
+        self.master.geometry(geometry_string=geometry)
+        self.master.title(title)
         self._extra_method = _extra_method
         self.tab_index = -1 
         self.method = method 

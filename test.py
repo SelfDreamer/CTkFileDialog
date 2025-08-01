@@ -4,12 +4,29 @@ import CTkFileDialog
 from CTkFileDialog.Constants import HOME, PWD
 
 def open_mini_file() -> None:
-    file = CTkFileDialog.askopenfilename(style='Mini', autocomplete=True, initial_dir=PWD)
+    file = CTkFileDialog.askopenfilename(style='Mini', 
+                                         autocomplete=True, 
+                                         initial_dir=PWD, 
+                                         title='Open File, please!',
+                                         geometry=(
+                                             '1320x720', # Normal Dialog Geometry  
+                                             '500x400', # Mini Dialog Geometry
+                                                  )
+                                         )
     if file:
         print(f"[+] Selected file -> %s" % file)
 
 def open_normal_file() -> None:
-    file = CTkFileDialog.askopenfilename(style='Default', autocomplete=True, tool_tip=True, initial_dir=HOME)
+    file = CTkFileDialog.askopenfilename(style='Default',
+                                         autocomplete=True,
+                                         tool_tip=True, 
+                                         initial_dir=HOME,
+                                         geometry=(
+                                             '1320x720', # Normal Dialog geometry 
+                                             '500x400' # Mini Dialog Geometry
+                                                  ),
+                                         title='Open File, please!'
+                                         )
     if file: 
         print(f"[+] Selected file -> %s" % file)
 

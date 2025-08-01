@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from .Dialog import _DrawApp, _MiniDialog, Literal, Optional, List, Path 
+from typing import Tuple
 
 def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
                     filetypes: Optional[List[str]] = None,
@@ -9,6 +10,8 @@ def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
                     video_preview: bool = False,
                     initial_dir: str = str(Path.cwd()),
                     tool_tip: bool = False,
+                    geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                    title: str = 'CTkFileDialog',
                     ) -> str | None:
     """
     Displays a file dialog for selecting a single file and returns the file path.
@@ -25,6 +28,8 @@ def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
         initial_dir: Initial directory to display (defaults to current working directory)
         tool_tip: Enables tooltips with file information on hover 
         style: You define the dialog style. There are two styles: the default one and a small one. (Default, Mini)
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
 
     Returns:
         str: Absolute path to the selected file, or None if canceled
@@ -38,11 +43,11 @@ def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
     """
     if style == 'Default':
 
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilename', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilename', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
         return app.selected_file if app.selected_file else None
     elif style == 'Mini':
-        app = _MiniDialog(method='askopenfilename', filetypes=filetypes, initial_dir=initial_dir, autocomplete=autocomplete, hidden=hidden)
+        app = _MiniDialog(method='askopenfilename', filetypes=filetypes, initial_dir=initial_dir, autocomplete=autocomplete, hidden=hidden, geometry=geometry[1], title=title)
 
         return app.selected_path 
 
@@ -52,6 +57,8 @@ def askdirectory(style: Optional[Literal['Default', 'Mini']] = 'Default',
                  autocomplete: bool = False,
                  initial_dir: str = str(Path.cwd()),
                  tool_tip: bool = False,
+                 geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                 title: str = 'CTkFileDialog',
                  ) -> str | None:
     """
     Displays a directory selection dialog and returns the selected path.
@@ -67,6 +74,8 @@ def askdirectory(style: Optional[Literal['Default', 'Mini']] = 'Default',
         autocomplete: Enables path autocompletion feature
         initial_dir: Starting directory (defaults to current working directory)
         tool_tip: Enables directory information tooltips
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
 
     Returns:
         str: Path to the selected directory, or None if canceled
@@ -81,22 +90,24 @@ def askdirectory(style: Optional[Literal['Default', 'Mini']] = 'Default',
     """
     if style == 'Default':
 
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, method='askdirectory', autocomplete=autocomplete, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, method='askdirectory', autocomplete=autocomplete, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
         return app.selected_file if app.selected_file else None
 
     elif style == 'Mini': 
-        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='askdirectory', autocomplete=autocomplete)
+        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='askdirectory', autocomplete=autocomplete, title=title, geometry=geometry[1])
         return app.selected_path if app.selected_path else None
 
 def askopenfilenames(style: Optional[Literal['Default', 'Mini']] = 'Default',
-                    filetypes: Optional[List[str]] = None,
+                     filetypes: Optional[List[str]] = None,
                      hidden: bool = False, 
                      preview_img: bool = False,
                      autocomplete: bool = False,
                      video_preview: bool = False,
                      initial_dir: str = str(Path.cwd()),
                      tool_tip: bool = False,
+                     geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                     title: str = 'CTkFileDialog',
                      ) -> tuple[str] | None:
     """
     Displays a file dialog for multiple file selection.
@@ -114,6 +125,8 @@ def askopenfilenames(style: Optional[Literal['Default', 'Mini']] = 'Default',
         video_preview: Enables video file previews
         initial_dir: Initial directory to display
         tool_tip: Shows file metadata tooltips
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
 
     Returns:
         tuple[str]: Tuple of selected file paths, or None if canceled
@@ -128,11 +141,11 @@ def askopenfilenames(style: Optional[Literal['Default', 'Mini']] = 'Default',
     """
 
     if style == 'Default':
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilenames', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilenames', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
         return tuple(app.selected_objects) if app.selected_objects else None
     elif style == 'Mini': 
-        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='askopenfilenames', autocomplete=autocomplete)
+        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='askopenfilenames', autocomplete=autocomplete, geometry=geometry[1], title=title)
 
         return tuple(app.selected_paths) if app.selected_paths else None
 
@@ -143,7 +156,9 @@ def asksaveasfilename(style: Optional[Literal['Default', 'Mini']] = 'Default',
                       autocomplete: bool = False,
                       video_preview: bool = False,
                       initial_dir: str = str(Path.cwd()),
-                      tool_tip: bool = False, 
+                      tool_tip: bool = False,
+                      geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                      title: str = 'CTkFileDialog',
                       ) -> str | None:
     """
     Displays a save file dialog and returns the selected path.
@@ -161,6 +176,8 @@ def asksaveasfilename(style: Optional[Literal['Default', 'Mini']] = 'Default',
         video_preview: Enables video previews
         initial_dir: Default starting directory
         tool_tip: Shows file information tooltips
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
 
     Returns:
         str: Path where file should be saved, or None if canceled
@@ -176,12 +193,12 @@ def asksaveasfilename(style: Optional[Literal['Default', 'Mini']] = 'Default',
     """
     if style == 'Default':
 
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='asksaveasfilename', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='asksaveasfilename', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
         return app.selected_file if app.selected_file else None
     elif style == 'Mini':
 
-        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfilename', autocomplete=autocomplete)
+        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfilename', autocomplete=autocomplete, geometry=geometry[1], title=title)
         
         return app.selected_path if app.selected_path else None
 
@@ -194,6 +211,8 @@ def asksaveasfile(style: Optional[Literal['Default', 'Mini']] = 'Default',
                   video_preview: bool = False,
                   initial_dir: str = str(Path.cwd()),
                   tool_tip: bool = False,
+                  geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                  title: str = 'CTkFileDialog',
                   **kwargs,
                   ):
     """
@@ -213,6 +232,8 @@ def asksaveasfile(style: Optional[Literal['Default', 'Mini']] = 'Default',
         video_preview: Enables video preview
         initial_dir: Starting directory
         tool_tip: Enables file info tooltips
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
         **kwargs: Additional arguments passed to open()
 
     Returns:
@@ -224,12 +245,12 @@ def asksaveasfile(style: Optional[Literal['Default', 'Mini']] = 'Default',
         ...         f.write("Log entry\\n")
     """
     if style == 'Default':
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='asksaveasfile', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='asksaveasfile', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
     
         return open(app.selected_file, mode=mode, **kwargs) if app.selected_file else None
     elif style == 'Mini':
-        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfile')
+        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfile', geometry=geometry[1], title=title)
         return open(app.selected_path, mode=mode, **kwargs) if app.selected_path else None
 
 def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default', 
@@ -241,6 +262,8 @@ def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default',
                 video_preview: bool = False,
                 initial_dir: str = str(Path.cwd()),
                 tool_tip: bool = False,
+                geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                title: str = 'CTkFileDialog',
                 **kwargs,
                 ):
     """
@@ -260,6 +283,8 @@ def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default',
         video_preview: Enables video preview
         initial_dir: Starting directory
         tool_tip: Shows file info tooltips
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
         **kwargs: Additional arguments for open()
 
     Returns:
@@ -272,12 +297,12 @@ def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default',
         ...     f.close()
     """
     if style == 'Default':
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfile', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfile', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
     
         return open(app.selected_file, mode=mode, **kwargs) if app.selected_file else None
     elif style == 'Mini':
-        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfile', autocomplete=autocomplete, _extra_method='askopenfile')
+        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfile', autocomplete=autocomplete, _extra_method='askopenfile', geometry=geometry[1], title=title)
 
         return open(app.selected_path, mode=mode, **kwargs) if app.selected_path else None
 
@@ -290,6 +315,8 @@ def askopenfiles(style: Optional[Literal['Default', 'Mini']] = 'Default',
                  video_preview: bool = False,
                  initial_dir: str = str(Path.cwd()),
                  tool_tip: bool = False,
+                 geometry: Tuple[str, str] = ('1320x720', '500x400'),
+                 title: str = 'CTkFileDialog',
                  **kwargs,
                   ):
     """
@@ -309,6 +336,8 @@ def askopenfiles(style: Optional[Literal['Default', 'Mini']] = 'Default',
         video_preview: Enables video preview
         initial_dir: Starting directory
         tool_tip: Shows file info tooltips
+        geometry: You define the geometry string, for example (Default: (1320x720, 500x500)) The first value will be the geometry for the normal dialog and the second for the mini dialog
+        title: Define the title from the app, default will be "CTkFileDialog"
         **kwargs: Passed to each open() call
 
     Returns:
@@ -322,13 +351,13 @@ def askopenfiles(style: Optional[Literal['Default', 'Mini']] = 'Default',
         ...         f.close()
     """
     if style == 'Default': 
-        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilenames', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip)
+        app = _DrawApp(filetypes=filetypes, current_path=initial_dir, hidden=hidden, preview_img=preview_img, method='askopenfilenames', autocomplete=autocomplete, video_preview=video_preview, tool_tip=tool_tip, geometry=geometry[0], title=title)
         app.app.wait_window()
     
         return tuple(open(f, mode=mode, **kwargs) for f in app.selected_objects) if app.selected_objects else None
 
     elif style == 'Mini':
 
-        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, autocomplete=autocomplete, method='askopenfilenames')
+        app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, autocomplete=autocomplete, method='askopenfilenames', geometry=geometry[1], title=title)
 
         return tuple(open(f, mode=mode, **kwargs) for f in app.selected_paths) if app.selected_paths else None
