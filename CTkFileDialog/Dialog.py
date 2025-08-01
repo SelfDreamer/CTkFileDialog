@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, re, cv2, shlex, pwd, stat, subprocess, time
+import os, re, cv2, subprocess, time
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from pathlib import Path
@@ -38,7 +38,7 @@ class _System():
     def GetPath(path=None) -> str:
         if path is None:
             path = os.getcwd()
-        return f"   {path}" if path == os.getenv('HOME') else path
+        return f"{path}" if path == os.getenv('HOME') else path
     
     @staticmethod
     def parse_path(path):
@@ -165,13 +165,6 @@ class _DrawApp():
             ".gz": "gz",
         }
     
-    def __BAR__(self):
-        text = self.PathEntry.get()
-
-        if text and os.path.isdir(text) and not text.endswith('/'):
-            self.PathEntry.delete(0, tk.END)
-            self.PathEntry.insert(0, text + '/')
-
     def update_entry(self, ruta) -> None:
         self.PathEntry.configure(state='normal')
         self.PathEntry.delete(0, 'end')
@@ -185,10 +178,6 @@ class _DrawApp():
             return nombre[:max_len - 3]
         return nombre
     
-    @staticmethod
-    def _fix_format(s):
-        return shlex.quote(s)
-
     def btn_retrocess(self, master: ctk.CTkToplevel):
         if self.current_path != self.current_path.parent:
             self.current_path = self.current_path.parent
@@ -228,7 +217,7 @@ class _DrawApp():
             # Si es abrir archivo
             if self.method == 'askopenfile':
                 if not os.path.isfile(ruta):
-                    self.__BAR__()
+                    
                     CTkMessagebox(message='File not found haha!', title='Error', icon='cancel')
                     self.PathEntry.delete(0, ctk.END)
                     self.PathEntry.insert(0, self.current_path)
@@ -248,14 +237,14 @@ class _DrawApp():
             self.PathEntry.delete(0, 'end')
             self.PathEntry.insert(0, str(self.current_path))
             self.PathEntry.configure(state='normal')
-            self.__BAR__()
+            
             CTkMessagebox(message='No such file or directory!', title='Error', icon='cancel')
 
         except PermissionError:
-            self.__BAR__()
+            
             CTkMessagebox(message='Permiso denegado!', title='Error', icon='cancel')
         except FileNotFoundError: 
-            self.__BAR__()
+            
             CTkMessagebox(message='File Not Found!', title='Error', icon='cancel')
 
     def close_app(self):
@@ -271,7 +260,7 @@ class _DrawApp():
             elif self.method == 'askopenfile':
                 self.selected_file = self._temp_item
             else:
-                self.selected_file = self._fix_format(self._temp_item)
+                self.selected_file = self._temp_item
                 return
 
         if len(self._temp_items) >= 1:
@@ -300,7 +289,7 @@ class _DrawApp():
             return False
                 
 
-    def __COMPLETE__(self, event):
+    def _autocomplete(self, event):
         
         ruta = self.current_path 
         files_path = []
@@ -361,9 +350,9 @@ class _DrawApp():
 
         if self.autocomplete:
             
-            self.PathEntry.bind('<Down>', lambda event: self.__COMPLETE__(event))
-            self.PathEntry.bind('<Up>', lambda event: self.__COMPLETE__(event))
-            self.PathEntry.bind('<Tab>', lambda event: self.__COMPLETE__(event))
+            self.PathEntry.bind('<Down>', lambda event: self._autocomplete(event))
+            self.PathEntry.bind('<Up>', lambda event: self._autocomplete(event))
+            self.PathEntry.bind('<Tab>', lambda event: self._autocomplete(event))
     
     def _get_video_frame(self, path: str, frame_number: int = 1) -> Image.Image | None:
         if not self._is_video(path):
@@ -395,8 +384,12 @@ class _DrawApp():
         # Cargar el archivo user-dirs.dirs
         dir_file = os.path.join(home, ".config/user-dirs.dirs")
         pattern = re.compile(r'XDG_\w+_DIR="(.+?)"')
+        
+        import platform
+        if platform.system() == 'Linux':
+            if not os.path.exists(path=dir_file):
+                raise FileNotFoundError(f"El archivo {dir_file} es importante para la ejecución del programa!")
 
-        if os.path.exists(dir_file):
             with open(dir_file, 'r') as f:
                 for line in f:
                     if not line.startswith('#') and line.strip():
@@ -406,8 +399,22 @@ class _DrawApp():
                             nombre = os.path.basename(os.path.normpath(ruta))
                             if nombre != f"{os.getenv('USER')}":  # Evitar duplicado
                                 carpetas[nombre] = ruta
-        else:
-            raise FileNotFoundError(f"El archivo {dir_file} es importante para la ejecución del programa!")
+
+        elif platform.system() == 'Windows':
+
+            win_carpetas = {
+                "Home": str(home),
+                "Desktop": str(home / "Desktop"),
+                "Documents": str(home / "Documents"),
+                "Downloads": str(home / "Downloads"),
+                "Pictures": str(home / "Pictures"),
+                "Music": str(home / "Music"),
+                "Videos": str(home / "Videos"),
+            }
+
+            for k, v in win_carpetas.items():
+                carpetas[k] = v
+
 
         # Título
         LabelSide = ctk.CTkLabel(master=LeftSideFrame, text='Lugares', font=('Hack Nerd Font', 15))
@@ -505,49 +512,23 @@ class _DrawApp():
             else:
                 self._temp_items.append(r)
 
-    def set_tooltip(self, path: str, widget: Any):
-        _CustomToolTip(widget=widget, message=self._get_info(ruta=path) )
-
     @staticmethod
     def _get_info(ruta: str) -> str:
         try:
             st = os.stat(ruta)
 
             # Usuario propietario
-            usuario = pwd.getpwuid(st.st_uid).pw_name
+            #usuario = get_owner(ruta)
 
             # Permisos (ej: -rw-r--r--)
-            permisos = stat.filemode(st.st_mode)
+            #permisos = get_permissions(ruta)
     
             # Fecha legible
             fecha = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(st.st_ctime))
-
-            # Tamaño en KB/MB
-            if os.path.isdir(ruta):
-                try:
-                    resultado = subprocess.run(
-                        ["du", "-sb", ruta],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                        check=True
-                    )
-                    size_bytes = int(resultado.stdout.split()[0])
-                    tamaño = size_bytes
-                except Exception as e:
-                    tamaño = 0 
-                else:
-                    if tamaño != 0:
-                        tamaño = f"{tamaño / 1024 / 1024:.2f} MB"
-            else:
-                size_bytes = st.st_size
-                tamaño = f"{size_bytes/1024:.1f} KB" if size_bytes < 1024**2 else f"{size_bytes/1024/1024:.1f} MB"
     
             return f"""File: {os.path.basename(ruta)}
-    Size: {tamaño}
-    Owner: {usuario}
-    Permissions: {permisos}
     creation: {fecha}
+    path: {ruta}
                     """
         except Exception as e:
             return f"Error al obtener info: {e}"
@@ -611,10 +592,7 @@ class _DrawApp():
             )
 
             if self.tool_tip:
-                try:
-                    boton.bind("<Enter>", lambda _, b=boton, p=ruta_completa: self.set_tooltip(widget=b, path=p))
-                except _tkinter.TclError:
-                    pass
+                _CustomToolTip(widget=boton, message=self._get_info(ruta_completa))
 
             if self.method in ['askopenfilenames', 'askopenfiles']:
                 boton.bind('<Button-1>', lambda event, r=ruta_completa, b=boton: self._handle_click(event, r, master, b))
@@ -643,7 +621,7 @@ class _DrawApp():
         self.BATCH = 50  
         self.selected_objects.clear()
         self._all_buttons.clear()
-        self.__BAR__()
+        
         self.CenterSideFrame._parent_canvas.yview_moveto(0)
         self.__clear__()
 
