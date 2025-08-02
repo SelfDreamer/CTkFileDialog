@@ -14,6 +14,7 @@
 - 🎥 Video thumbnail preview
 - 📁 Directory selection
 - 💾 Save file dialog (return path or open file)
+- ❔ Tooltip support
 
 ---
 
@@ -200,6 +201,9 @@ app.mainloop()
 | `initial_dir`   | Set the initial directory when opening the dialog.                         |
 | `tool_tip`   | Enable the tool tip.                         |
 | `style`   | Defines the dialog style, by default it will be 'Default' but you can choose a small one ('Mini')                        |
+| `geometry`   | You define the geometry string in a tuple: Example ('NormalGM', 'MiniGeometry')                        |
+| `title`   | Define the title from the app, default will be "CTkFileDialog"                        |
+
 
 </div>
 
