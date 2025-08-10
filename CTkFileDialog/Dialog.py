@@ -44,13 +44,7 @@ class _System():
     @staticmethod
     def parse_path(path):
         
-        if path.startswith('~'):
-            path = os.path.expanduser(path)
-
-        if path == '.':
-            path = Path.cwd()
-
-        return Path(path)
+        return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
 
 class _DrawApp():
 
@@ -71,7 +65,7 @@ class _DrawApp():
         self.current_path = current_path
 
         if not self.current_path: 
-            self.current_path = Path.cwd()
+            self.current_path = os.getcwd()
         else:
             self.current_path = _System.parse_path(path=self.current_path)
         self.autocomplete = autocomplete
@@ -183,8 +177,8 @@ class _DrawApp():
         return nombre
     
     def btn_retrocess(self, master: ctk.CTkToplevel):
-        if self.current_path != self.current_path.parent:
-            self.current_path = self.current_path.parent
+        if self.current_path != os.path.dirname(self.current_path):
+            self.current_path = os.path.dirname(self.current_path)
             self.update_entry(ruta=self.current_path)
             self.__list__(master)
 
@@ -629,11 +623,10 @@ class _DrawApp():
         self.CenterSideFrame._parent_canvas.yview_moveto(0)
         self.__clear__()
 
-        ruta_path = Path(self.current_path)
-        ruta_str = str(ruta_path)
+        ruta_path = self.current_path
         
         self.archivos = [
-            f.name for f in ruta_path.iterdir()
+            f.name for f in os.scandir(ruta_path)
             if (
                 (f.is_dir() or (self.method != 'askdirectory' and f.is_file())) and
                 (self.hidden or not f.name.startswith('.')) and
@@ -730,7 +723,7 @@ class _MiniDialog():
         )
 
     def list_files(self):
-        ruta_path = os.path.abspath(self.path_entry.get())
+        ruta_path = os.path.abspath(os.path.expanduser(os.path.expandvars(self.path_entry.get())))
         if os.path.isfile(ruta_path):
             return 
         try:
@@ -761,13 +754,21 @@ class _MiniDialog():
                 key=lambda f: (not f.is_dir(), f.name.lower())
             )
 
+            self.update_entry(path=ruta_path)
+
             for f in archivos_ordenados:
                 icon = self.folder_image if f.is_dir() else self.file_image
                 self.tree.insert("", tk.END, text=f.name, image=icon)
 
             self.absolute_paths = [f.path for f in archivos_ordenados]
-        except PermissionError as err:
+
+        except PermissionError:
             CTkMessagebox(message='Permision Denied!', title='Error', icon='cancel')
+
+    def update_entry(self, path):
+            self.path_entry.configure(state='normal')
+            self.path_entry.delete(0, ctk.END)
+            self.path_entry.insert(0, path)
     
     def _autocomplete(self, event: tk.Event):
         if not self.archivos['name']:
@@ -794,13 +795,15 @@ class _MiniDialog():
         return "break"
 
     def _on_enter_path(self):
-        path = os.path.abspath(self.path_entry.get())
+        path = os.path.abspath(os.path.expanduser(os.path.expandvars(self.path_entry.get())))
+
         if os.path.isdir(path):
             self.initial_dir = path
             self.list_files()
-        else:
-            # Opcional: mostrar advertencia
-            return 
+        else: 
+            self.update_entry(path=self.initial_dir)
+            CTkMessagebox(title="Error", icon='cancel', message='No such file or directory!')
+
 
     def _on_cancel(self):
         self.selected_path = None 

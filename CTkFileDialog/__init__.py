@@ -1,7 +1,7 @@
 '''
 File dialog created in custom Tkinter and inspired by the Tkinter dialog.
 
-- Version: 1.9.0 
+- Version: 0.2.6 
 - Author: Flick
 - Github: https://github.com/FlickGMD/CTkFileDialog
 '''
