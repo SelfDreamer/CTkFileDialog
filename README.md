@@ -15,6 +15,7 @@
 - 📁 Directory selection
 - 💾 Save file dialog (return path or open file)
 - ❔ Tooltip support
+- 🖥️ Shell Path Syntax Support
 
 ---
 

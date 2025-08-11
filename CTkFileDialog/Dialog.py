@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, re, cv2, subprocess, time
+import os, re, cv2, time
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from pathlib import Path
@@ -53,7 +53,7 @@ class _DrawApp():
                  filetypes: Optional[List[str]] = None, 
                  bufering: int = 1,
                  encoding: str = 'utf-8',
-                 current_path : str = str(Path.cwd()),
+                 current_path : str = '.',
                  hidden: bool = False, 
                  preview_img: bool = False,
                  autocomplete: bool = False,
@@ -281,22 +281,24 @@ class _DrawApp():
             cap = cv2.VideoCapture(video)
             valid = cap.isOpened()
             cap.release()
-            return valid # Es un video valido
+            return valid 
         except:
 
             return False
                 
 
-    def _autocomplete(self, event):
-        
-        ruta = self.current_path 
-        files_path = []
-        for archivo in self.archivos:
-            ruta_completa = os.path.join(ruta, archivo)
-            files_path.append(ruta_completa)
+    def _autocomplete(self, event):        
 
-        if not files_path:
+        if not hasattr(self, "entire_paths"):
             return "break"
+
+        if not self.entire_paths:
+
+            return "break"
+
+        if not self.archivos:
+            return "break"
+
 
         max_index = len(self.archivos)
 
@@ -305,7 +307,7 @@ class _DrawApp():
         else:
             self.tab_index = (self.tab_index + 1) % max_index
 
-        path = files_path[self.tab_index]
+        path = self.entire_paths[self.tab_index]
         self.PathEntry.delete(0, ctk.END)
         self.PathEntry.insert(0, path)
         
@@ -536,7 +538,7 @@ class _DrawApp():
         columnas = 5
         row = self.LOADED // columnas
         col = self.LOADED % columnas
-        ruta = str(Path(self.current_path))
+        ruta = self.current_path
 
         while self.LOADED < len(self.archivos) and cantidad > 0:
             archivo = self.archivos[self.LOADED]
@@ -637,6 +639,13 @@ class _DrawApp():
 
         if not self.archivos:
             return
+        
+        if self.autocomplete:
+        
+            self.entire_paths = [os.path.join(self.current_path, f) for f in self.archivos]
+
+            if not self.entire_paths: 
+                self.entire_paths = None
 
         self._cargar_archivos(master, cantidad=self.BATCH)
 
@@ -663,6 +672,12 @@ class _MiniDialog():
         self.filetypes = filetypes
         self.autocomplete = autocomplete
         self.initial_dir = initial_dir
+
+        if not self.initial_dir: 
+            self.initial_dir = os.getcwd()
+        else: 
+            self.initial_dir = _System().GetPath(path=self.initial_dir)
+
         self.selected_path = ''
         self.selected_paths = []
         self.selected_items = []
@@ -759,11 +774,18 @@ class _MiniDialog():
             for f in archivos_ordenados:
                 icon = self.folder_image if f.is_dir() else self.file_image
                 self.tree.insert("", tk.END, text=f.name, image=icon)
-
-            self.absolute_paths = [f.path for f in archivos_ordenados]
+            
+            if self.autocomplete:
+                self.absolute_paths = [f.path for f in archivos_ordenados]
 
         except PermissionError:
             CTkMessagebox(message='Permision Denied!', title='Error', icon='cancel')
+        else: 
+            
+            if self.autocomplete:
+
+                self.max_index = len(self.archivos['name'])
+
 
     def update_entry(self, path):
             self.path_entry.configure(state='normal')
@@ -771,15 +793,14 @@ class _MiniDialog():
             self.path_entry.insert(0, path)
     
     def _autocomplete(self, event: tk.Event):
-        if not self.archivos['name']:
+
+        if not self.archivos['name'] or not hasattr(self, "max_index"):
             return "break"
 
-        max_index = len(self.archivos['name'])
-
         if event.keysym == 'Up':
-            self.tab_index = (self.tab_index - 1) % max_index
+            self.tab_index = (self.tab_index - 1) % self.max_index
         else:
-            self.tab_index = (self.tab_index + 1) % max_index
+            self.tab_index = (self.tab_index + 1) % self.max_index
 
         path = self.absolute_paths[self.tab_index]
 
@@ -801,8 +822,10 @@ class _MiniDialog():
             self.initial_dir = path
             self.list_files()
         else: 
+            self.path_entry.configure(state='normal')
             self.update_entry(path=self.initial_dir)
             CTkMessagebox(title="Error", icon='cancel', message='No such file or directory!')
+            return
 
 
     def _on_cancel(self):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import customtkinter as ctk
 import CTkFileDialog
-from CTkFileDialog.Constants import HOME, PWD
+from CTkFileDialog.Constants import HOME
 
 def open_mini_file() -> None:
     file = CTkFileDialog.askopenfilename(style='Mini', 
                                          autocomplete=True, 
-                                         initial_dir=PWD, 
+                                         initial_dir=HOME, 
                                          title='Open File, please!',
                                          geometry=(
                                              '1320x720', # Normal Dialog Geometry  
@@ -14,13 +14,13 @@ def open_mini_file() -> None:
                                                   )
                                          )
     if file:
-        print(f"[+] Selected file -> %s" % file)
+        print(f"[+] Selected file -> {file}")
 
 def open_normal_file() -> None:
     file = CTkFileDialog.askopenfilename(style='Default',
                                          autocomplete=True,
                                          tool_tip=True, 
-                                         initial_dir=HOME,
+                                         initial_dir=HOME, # Can you put $HOME or %TMP% this variable can be used as shell :)
                                          geometry=(
                                              '1320x720', # Normal Dialog geometry 
                                              '500x400' # Mini Dialog Geometry
@@ -28,7 +28,7 @@ def open_normal_file() -> None:
                                          title='Open File, please!'
                                          )
     if file: 
-        print(f"[+] Selected file -> %s" % file)
+        print(f"[+] Selected file -> {file}")
 
 def toggle_theme():
     current = theme_switch.get()
