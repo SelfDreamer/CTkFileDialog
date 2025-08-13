@@ -190,7 +190,7 @@ class _DrawApp():
         if self.current_path != os.path.dirname(self.current_path):
             self.current_path = os.path.dirname(self.current_path)
             self.update_entry(ruta=self.current_path)
-            self.__list__(master)
+            self._list_files(master)
 
 
     def navigate_to(self, ruta: str, master):
@@ -203,7 +203,7 @@ class _DrawApp():
                     self._temp_item = ruta
                 self.current_path = Path(ruta)
                 self.update_entry(ruta=self.current_path)
-                self.__list__(master)
+                self._list_files(master)
                 return
 
             # Si es un archivo y estamos en modo guardar como archivo
@@ -222,7 +222,6 @@ class _DrawApp():
                 self.close_app()
                 return
 
-            # Si es abrir archivo
             if self.method == 'askopenfile':
                 if not os.path.isfile(ruta):
                     
@@ -235,18 +234,17 @@ class _DrawApp():
                 self.update_entry(self._temp_item)
                 return
 
-            # Otro archivo válido
             if os.path.isfile(ruta):
                 self._temp_item = ruta
                 self.update_entry(self._temp_item)
                 return
 
-            # Ruta no válida o archivo no existente
             self.PathEntry.delete(0, 'end')
             self.PathEntry.insert(0, str(self.current_path))
             self.PathEntry.configure(state='normal')
             
             CTkMessagebox(message='No such file or directory!', title='Error', icon='cancel')
+            return
 
         except PermissionError:
             
@@ -466,18 +464,16 @@ class _DrawApp():
         canvas = self.CenterSideFrame._parent_canvas
 
         def _on_mousewheel(event):
-            if event.num == 4:  # Scroll arriba en Linux
+            if event.num == 4: 
                 canvas.yview_scroll(-1, "units")
-            elif event.num == 5:  # Scroll abajo en Linux
+            elif event.num == 5:  
                 canvas.yview_scroll(1, "units")
-            else:  # Windows
+            else:  
 
                 canvas.yview_scroll(-int(event.delta / 120), "units")
             self._verificar_scroll(self.app)
-            return "break"  # Esto evita que el evento se propague 
+            return "break"   
 
-        # Vincular al propio canvas
-        
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
         canvas.bind("<Button-4>", _on_mousewheel)
         canvas.bind("<Button-5>", _on_mousewheel)
@@ -499,7 +495,7 @@ class _DrawApp():
         self.content_frame = ctk.CTkFrame(master=self.CenterSideFrame)
         self.content_frame.pack(side='top', fill='both', expand=True, padx=20, pady=10)
 
-        self.__list__(master=master)
+        self._list_files(master=master)
 
     def __clear__(self):
 
@@ -572,6 +568,7 @@ class _DrawApp():
         ruta = self.current_path
 
         while self.LOADED < len(self.archivos) and cantidad > 0:
+            
             archivo = self.archivos[self.LOADED]
             ruta_completa = os.path.join(ruta, archivo)
 
@@ -607,7 +604,7 @@ class _DrawApp():
             command = None
             if self.method not in ['askopenfilenames']:
                 command = lambda r=ruta_completa: self.navigate_to(ruta=r, master=master)
-
+        
             boton = ctk.CTkButton(
                 master=self.content_frame,
                 text=archivo_fixeado,
@@ -647,7 +644,7 @@ class _DrawApp():
              pass
 
 
-    def __list__(self, master: ctk.CTkToplevel) -> None:
+    def _list_files(self, master: ctk.CTkToplevel) -> None:
         self.LOADED = 0
         self.BATCH = 50  
         self.selected_objects.clear()
@@ -905,21 +902,18 @@ class _MiniDialog():
         return tk.PhotoImage(file=image)
     
     def _on_select(self):
-        # Obtener ruta escrita (si aplica)
+
         path = self.path_entry.get().strip() if hasattr(self, "path_entry") else ""
 
-        # Expandir variables y rutas de usuario
         if path:
             path = os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
             if not os.path.dirname(path):
                 path = os.path.join(self.initial_dir, path)
 
-        # --- Guardar archivos ---
         if self.method in ['asksaveasfile', 'asksaveasfilename']:
             if not path or os.path.isdir(path):
                 return
 
-            # Verificar si el archivo existe
             if os.path.exists(path) and self._extra_method != 'askopenfile':
                 opts = CTkMessagebox(
                     message='This file exists now! Do you wanna rescribe?',
@@ -935,7 +929,6 @@ class _MiniDialog():
             self.master.destroy()
             return
 
-        # --- Selección múltiple de archivos ---
         elif self.method in ['askopenfiles', 'askopenfilenames']:
             selected_items = self.tree.selection()
             selected_paths = [
@@ -949,7 +942,6 @@ class _MiniDialog():
                 self.master.destroy()
             return
 
-        # --- Selección única (archivo o carpeta) ---
         elif self.method in ['askopenfilename', 'askopenfile', 'askdirectory']:
             if not self.selected_item:
                 return
