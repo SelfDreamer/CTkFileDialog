@@ -9,7 +9,7 @@ PWD = str(Path.cwd())
 HOME = str(Path.home())
 
 # System PATH split into a list of directories
-PATH = os.getenv('PATH').split(':')
+PATH = os.getenv('PATH').split(os.pathsep)
 
 # Temporary directory (fallback to /tmp if no env vars are set)
 TEMP = os.getenv('TMPDIR') or os.getenv('TEMP') or os.getenv('TMP') 
