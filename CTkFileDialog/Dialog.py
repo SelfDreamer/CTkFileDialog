@@ -447,21 +447,37 @@ class _DrawApp():
                 command=lambda r=ruta, n=nombre: self.navigate_to(ruta=r, master=master)
             )
             DirectorySide.pack(fill="x", pady=4)
-    def event_scroll(self, event=None):
+
+
+    def event_scroll(self):
         canvas = self.CenterSideFrame._parent_canvas
 
-        def scroll_and_check(event):
-            canvas.yview_scroll(-int(event.delta / 120), "units")
+        def _on_mousewheel(event):
+            if event.num == 4:  # Scroll arriba en Linux
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:  # Scroll abajo en Linux
+                canvas.yview_scroll(1, "units")
+            else:  # Windows
+                canvas.yview_scroll(-int(event.delta / 120), "units")
             self._verificar_scroll(self.app)
-        
+            return "break"  # Esto evita que el evento se propague 
 
-        canvas.bind("<MouseWheel>", scroll_and_check)
-        canvas.bind("<Button-4>", lambda event: (canvas.yview_scroll(-1, "units"), self._verificar_scroll(self.app)))
-        canvas.bind("<Button-5>", lambda event: (canvas.yview_scroll(1, "units"), self._verificar_scroll(self.app)))
+        # Vincular al propio canvas
+        canvas.bind("<MouseWheel>", _on_mousewheel)
+        canvas.bind("<Button-4>", _on_mousewheel)
+        canvas.bind("<Button-5>", _on_mousewheel)
+
+        # Vincular a todos los widgets hijos
+        for widget in canvas.winfo_children():
+            widget.bind("<MouseWheel>", _on_mousewheel)
+            widget.bind("<Button-4>", _on_mousewheel)
+            widget.bind("<Button-5>", _on_mousewheel)
+
 
     def CenterSide(self, master: ctk.CTkToplevel) -> None:
         self.CenterSideFrame = ctk.CTkScrollableFrame(master=master)
         self.CenterSideFrame.pack(expand=True, side='top', fill='both', padx=10, pady=10)
+        
         
         self.event_scroll()
 
