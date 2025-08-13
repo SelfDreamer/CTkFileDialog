@@ -90,6 +90,7 @@ class _DrawApp():
         self.selected_objects : list = [] 
         self._load_icons()
         self._temp_item = None 
+        self.app.protocol("WM_DELETE_WINDOW", self.protocol_windows)
         self._temp_items =  [] 
         self.TopSide(master=self.app)
         self.LeftSide(master=self.app)
@@ -97,6 +98,15 @@ class _DrawApp():
         try: 
             self.app.grab_set()
         except _tkinter.TclError:
+            pass
+
+    def protocol_windows(self):
+
+        try:
+            self.app.destroy()
+
+            self.app.unbind_all("<MouseWheel>")
+        except  Exception:
             pass
 
     @staticmethod
@@ -250,7 +260,7 @@ class _DrawApp():
             if not os.path.isdir(self.PathEntry.get()): self.selected_file = self.PathEntry.get()
 
         if self._temp_item:
-
+            self.protocol_windows() 
             self.app.destroy()
             if self.method == 'asksaveasfile':
                 self.selected_file = self._temp_item
@@ -262,6 +272,7 @@ class _DrawApp():
                 return
 
         if len(self._temp_items) >= 1:
+            self.protocol_windows()
             self.app.destroy()
             if self.method == "askopenfilenames" or self.method ==  "askopenfiles":
                 seen = set()
@@ -322,6 +333,7 @@ class _DrawApp():
         def btn_exit():
             msg = CTkMessagebox(message='¿Deseas salir?', title='Salir', option_1='Yes', option_2='No', icon='warning')
             if msg.get() == 'Yes':
+                self.protocol_windows()
 
                 self.selected_file = None 
                 self.selected_objects = []
@@ -450,6 +462,7 @@ class _DrawApp():
 
 
     def event_scroll(self):
+        
         canvas = self.CenterSideFrame._parent_canvas
 
         def _on_mousewheel(event):
@@ -458,12 +471,14 @@ class _DrawApp():
             elif event.num == 5:  # Scroll abajo en Linux
                 canvas.yview_scroll(1, "units")
             else:  # Windows
+
                 canvas.yview_scroll(-int(event.delta / 120), "units")
             self._verificar_scroll(self.app)
             return "break"  # Esto evita que el evento se propague 
 
         # Vincular al propio canvas
-        canvas.bind("<MouseWheel>", _on_mousewheel)
+        
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
         canvas.bind("<Button-4>", _on_mousewheel)
         canvas.bind("<Button-5>", _on_mousewheel)
 
