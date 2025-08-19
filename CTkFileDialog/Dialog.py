@@ -95,6 +95,7 @@ class _DrawApp():
         self.TopSide(master=self.app)
         self.LeftSide(master=self.app)
         self.CenterSide(master=self.app)
+        self.app.bind("<Alt-Left>", lambda _: self.btn_retrocess(master=self.app))
         try: 
             self.app.grab_set()
         except _tkinter.TclError:
@@ -723,6 +724,7 @@ class _MiniDialog():
         self._CenterSide()
         
         self.list_files()
+        self.master.bind("<Alt-Left>", lambda _: self._up() )
 
         self.master.wait_visibility()
         self.master.grab_set()
@@ -808,6 +810,7 @@ class _MiniDialog():
 
         except PermissionError:
             CTkMessagebox(message='Permision Denied!', title='Error', icon='cancel')
+            self._on_cancel(destroy=False)
         else: 
             
             if self.autocomplete:
@@ -850,19 +853,28 @@ class _MiniDialog():
             self.initial_dir = path
             self.list_files()
         else: 
+            if os.path.isfile(path):
+                return 
+
             self.path_entry.configure(state='normal')
-            self.update_entry(path=self.initial_dir)
-            CTkMessagebox(title="Error", icon='cancel', message='No such file or directory!')
-            return
+
+            if not os.path.exists(path=path):
+
+                self._on_cancel(destroy=False)
+                self.update_entry(path=self.initial_dir)
+                CTkMessagebox(title="Error", icon='cancel', message='No such file or directory!')
+
+            return ""
 
 
-    def _on_cancel(self):
+    def _on_cancel(self, destroy: bool = True):
         self.selected_path = None 
         self.selected_item = None 
 
         self.selected_paths = None 
         self.selected_items = None
-        self.master.destroy()
+        if destroy:
+            self.master.destroy()
         return 
 
     def _CenterSide(self):
