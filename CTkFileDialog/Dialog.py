@@ -465,15 +465,26 @@ class _DrawApp():
         canvas = self.CenterSideFrame._parent_canvas
 
         def _on_mousewheel(event):
-            if event.num == 4: 
-                canvas.yview_scroll(-1, "units")
-            elif event.num == 5:  
-                canvas.yview_scroll(1, "units")
-            else:  
 
-                canvas.yview_scroll(-int(event.delta / 120), "units")
-            self._verificar_scroll(self.app)
-            return "break"   
+            x_root, y_root = event.x_root, event.y_root
+
+            # Coordenadas y tamaño del scrollable frame
+            x1 = self.CenterSideFrame.winfo_rootx()
+            y1 = self.CenterSideFrame.winfo_rooty()
+            x2 = x1 + self.CenterSideFrame.winfo_width()
+            y2 = y1 + self.CenterSideFrame.winfo_height()
+            if x1 <= x_root <= x2 and y1 <= y_root <= y2:
+
+
+                if event.num == 4: 
+                    canvas.yview_scroll(-1, "units")
+                elif event.num == 5:  
+                    canvas.yview_scroll(1, "units")
+                else:  
+
+                    canvas.yview_scroll(-int(event.delta / 120), "units")
+                self._verificar_scroll(self.app)
+                return "break"   
 
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
         canvas.bind("<Button-4>", _on_mousewheel)

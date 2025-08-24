@@ -3,3 +3,4 @@ customtkinter
 Pillow
 CTkMessagebox
 CTkToolTip
+typeguard

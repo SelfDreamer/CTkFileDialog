@@ -16,6 +16,8 @@
 - 💾 Save file dialog (return path or open file)
 - ❔ Tooltip support
 - 🖥️ Shell Path Syntax Support
+- ⌨️ Backspace using Alt + Left Arrow shortcut 
+- 💡 Data type validation at runtime and for static type analyzers
 
 ---
 

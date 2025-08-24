@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-from .Dialog import _DrawApp, _MiniDialog, Literal, Optional, List, Path 
-from typing import Tuple
+from .Dialog import _DrawApp, _MiniDialog, Optional, List 
+from typing import Tuple, Literal 
+from typeguard import typechecked 
 
-def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
+@typechecked
+def askopenfilename(style: Literal['Mini', 'Default'] = 'Default',
                     filetypes: Optional[List[str]] = None,
                     hidden: bool = False, 
                     preview_img: bool = False,
@@ -51,7 +53,8 @@ def askopenfilename(style: Optional[Literal['Mini', 'Default']] = 'Default',
 
         return app.selected_path 
 
-def askdirectory(style: Optional[Literal['Default', 'Mini']] = 'Default',
+@typechecked
+def askdirectory(style: Literal['Default', 'Mini'] = 'Default',
                  filetypes: Optional[List[str]] = None,
                  hidden: bool = False, 
                  autocomplete: bool = False,
@@ -98,7 +101,8 @@ def askdirectory(style: Optional[Literal['Default', 'Mini']] = 'Default',
         app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='askdirectory', autocomplete=autocomplete, title=title, geometry=geometry[1])
         return app.selected_path if app.selected_path else None
 
-def askopenfilenames(style: Optional[Literal['Default', 'Mini']] = 'Default',
+@typechecked
+def askopenfilenames(style: Literal['Default', 'Mini'] = 'Default',
                      filetypes: Optional[List[str]] = None,
                      hidden: bool = False, 
                      preview_img: bool = False,
@@ -149,7 +153,8 @@ def askopenfilenames(style: Optional[Literal['Default', 'Mini']] = 'Default',
 
         return tuple(app.selected_paths) if app.selected_paths else None
 
-def asksaveasfilename(style: Optional[Literal['Default', 'Mini']] = 'Default',
+@typechecked
+def asksaveasfilename(style: Literal['Default', 'Mini'] = 'Default',
                       filetypes: Optional[List[str]] = None,
                       hidden: bool = False, 
                       preview_img: bool = False,
@@ -202,7 +207,8 @@ def asksaveasfilename(style: Optional[Literal['Default', 'Mini']] = 'Default',
         
         return app.selected_path if app.selected_path else None
 
-def asksaveasfile(style: Optional[Literal['Default', 'Mini']] = 'Default',
+@typechecked
+def asksaveasfile(style: Literal['Default', 'Mini'] = 'Default',
                   mode: Literal['r', 'rb', 'r+', 'rb+', 'r+b','w', 'wb', 'w+', 'wb+','a', 'ab', 'a+', 'ab+','x', 'xb'] = 'w',
                   filetypes: Optional[List[str]] = None,
                   hidden: bool = False, 
@@ -253,7 +259,8 @@ def asksaveasfile(style: Optional[Literal['Default', 'Mini']] = 'Default',
         app = _MiniDialog(filetypes=filetypes, initial_dir=initial_dir, hidden=hidden, method='asksaveasfile', geometry=geometry[1], title=title)
         return open(app.selected_path, mode=mode, **kwargs) if app.selected_path else None
 
-def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default', 
+@typechecked
+def askopenfile(style: Literal['Mini', 'Default'] = 'Default', 
                 mode: Literal['r', 'rb', 'r+', 'rb+', 'r+b','w', 'wb', 'w+', 'wb+','a', 'ab', 'a+', 'ab+','x', 'xb'] = 'r',
                 hidden: bool = False,
                 filetypes: Optional[List[str]] = None,
@@ -306,7 +313,8 @@ def askopenfile(style: Optional[Literal['Mini', 'Default']] = 'Default',
 
         return open(app.selected_path, mode=mode, **kwargs) if app.selected_path else None
 
-def askopenfiles(style: Optional[Literal['Default', 'Mini']] = 'Default',
+@typechecked
+def askopenfiles(style: Literal['Default', 'Mini'] = 'Default',
                  mode: Literal['r', 'rb', 'r+', 'rb+', 'r+b','w', 'wb', 'w+', 'wb+','a', 'ab', 'a+', 'ab+','x', 'xb'] = 'r',
                  hidden: bool = False,
                  filetypes: Optional[List[str]] = None,
