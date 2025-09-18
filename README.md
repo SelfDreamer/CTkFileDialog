@@ -26,14 +26,14 @@
 ```bash
 
 # Using bash 
-git clone https://github.com/FlickGMD/CTkFileDialog
+git clone https://github.com/SelfDreamer/CTkFileDialog
 cd CTkFileDialog
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
 
 # On Windows 
-git clone https://github.com/FlickGMD/CTkFileDialog 
+git clone https://github.com/SelfDreamer/CTkFileDialog 
 cd CTkFileDialog
 python3 -m venv .venv 
 .\.venv\Scripts\activate.ps1 # In Powershell
@@ -215,13 +215,13 @@ app.mainloop()
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/NormalDialogDark.png" width="80%">
+  <img src="https://raw.githubusercontent.com/SelfDreamer/CTkFileDialog/refs/heads/main/Images/NormalDialogDark.png" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/NormalDialogLight.png" width="80%">
+  <img src="https://raw.githubusercontent.com/SelfDreamer/CTkFileDialog/refs/heads/main/Images/NormalDialogLight.png" width="80%">
 </p>
 
 ---
@@ -277,13 +277,13 @@ This is a parameter of the file dialog, but it's more powerful than the default 
 ## 🌙 Dark Mode Preview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/MiniDialogDark.png" width="80%">
+  <img src="https://raw.githubusercontent.com/SelfDreamer/CTkFileDialog/refs/heads/main/Images/MiniDialogDark.png" width="80%">
 </p>
 
 ## ☀️ Light Mode Preview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/FlickGMD/CTkFileDialog/refs/heads/main/Images/MiniDialogLight.png" width="80%">
+  <img src="https://raw.githubusercontent.com/SelfDreamer/CTkFileDialog/refs/heads/main/Images/MiniDialogLight.png" width="80%">
 </p>
 
 The mini design wasn't created by me; it was created by this [user](https://github.com/limafresh), and all credit goes to him. I also want to thank him for creating that design in advance.
@@ -299,7 +299,7 @@ If you have any ideas, bugs, or requests — feel free to contribute!
 
 ## 🔗 Repository
 
-👉 [GitHub Repo](https://github.com/FlickGMD/CTkFileDialog)
+👉 [GitHub Repo](https://github.com/SelfDreamer/CTkFileDialog)
 
 <h2 align="center"> This tool is under development, I hope you like it! </h2>
 
